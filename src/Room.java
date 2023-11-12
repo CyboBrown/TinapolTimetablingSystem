@@ -11,10 +11,10 @@ public class Room {
         this.type = type;
         scheds = new ArrayList<>();
         for(int i = 1; i <= 5; i++) { // Adds Monday to Friday schedule
-            scheds.add(new DaySched(i));
+            scheds.add(new DaySched(i, this));
         }
         if(Timetable.include_saturday) {
-            scheds.add(new DaySched(6)); // Adds Saturday schedule if include_saturday is enabled
+            scheds.add(new DaySched(6, this)); // Adds Saturday schedule if include_saturday is enabled
         }
     }
 }

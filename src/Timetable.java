@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -5,28 +6,42 @@ public class Timetable {
     public String name = "Sample Timetable";
     List<Room> rooms;
     List<Course> courses;
+    List<Instructor> instructors;
 
-    static int interval = 60; // interval in minutes (15, 30, 60)
-    static int period_start = 420; // 7:00AM - 7:30AM
-    static int period_end = 1110; // 6:30PM - 7:00PM
+    static int interval = 30; // interval in minutes (15, 30, 60)
+    static int period_start = 420; // (7:00AM) - 7:30AM
+    static int period_end = 1140; // 6:30PM - (7:00PM)
     static List<Integer> excluded_periods = Arrays.stream(new int[] {720, 750}).boxed().toList(); // 12:00PM, 12:30PM
     static final int[] one_per_week_priority = {3, 6, 1, 5, 2, 4}; // WED (MON to FRI except WED for 4 per week priority)
     static final int[][] two_per_week_priority = {{2, 4}, {1, 5}, {3, 6}}; // T-Th (high priority), M-F, W-S
     static final int[][] three_per_week_priority = {{1, 3, 5}, {2, 4, 6}}; // 5 per week priority would be M-W-F then T-Th-S
-    static boolean include_saturday = false; // If false, W-S and T-Th-S are nada
+    static boolean include_saturday = true; // If false, W-S and T-Th-S are nada
     static int number_of_room_types = 4; // 0 - Normal, 1 - Large, 2 - ScienceLab, 3 - ComLab
 
-    public Timetable(List<Room> rooms, List<Course> courses) {
+    public Timetable(List<Room> rooms, List<Course> courses, List<Instructor> instructors) {
         this.rooms = rooms;
         this.courses = courses;
+        this.instructors = instructors;
         // Distribute Courses to Rooms
-        List<Course> temp = courses;
-        for(int i = 1; i <= Timetable.number_of_room_types || !temp.isEmpty(); i++) { // Prioritizes rooms with fewer compatible rooms
-            for(int j = 0; j < temp.size(); j++) {
-                Course c = temp.get(j);
+        List<Course> temp0 = new ArrayList<>(courses);
+        for(int i = 1; i <= Timetable.number_of_room_types || !temp0.isEmpty(); i++) { // Prioritizes courses with fewer compatible rooms
+            for(int j = 0; j < temp0.size(); j++) {
+                Course c = temp0.get(j);
                 if(c.number_of_compatible_rooms == i) {
                     putCourseToRooms(c, rooms);
-                    temp.remove(c);
+                    temp0.remove(c);
+                    j--;
+                }
+            }
+        }
+        // Distribute Instructors to Classes
+        List<Instructor> temp1 = new ArrayList<>(instructors);
+        for(int i = 0; i < Course.count || !temp1.isEmpty(); i++) { // Prioritizes instructors with fewer compatible courses
+            for(int j = 0; j < temp1.size(); j++) {
+                Instructor ins = temp1.get(j);
+                if(ins.compatible_courses.size() == i) {
+                    putInstructorToRooms(ins, rooms, courses);
+                    temp1.remove(ins);
                     j--;
                 }
             }
@@ -236,6 +251,79 @@ public class Timetable {
                     if(classes_offered == 0) break;
                 }
                 break;
+            default:
+                System.out.println("Invalid weekly_meeting value!");
+                break;
+        }
+    }
+
+    private static void putInstructorToRooms(Instructor t, List<Room> rooms, List<Course> courses) {
+        for(int i = 0; i < t.compatible_courses.size(); i++) {
+            Course current_course = courses.get(t.compatible_courses.get(i));
+            for(Room r : rooms) {
+                for(DaySched sched1 : r.scheds) {
+                    DaySched t_sched1 = t.scheds.get(sched1.day_of_week - 1);
+                    switch (current_course.weekly_meetings) {
+                        case 1:
+                            for(Activity a : sched1.activities) {
+                                if(
+                                    a.instructor == null &&
+                                    t_sched1.checkVacant(a.start_time, a.duration) &&
+                                    a.course == current_course &&
+                                    t.addMinutes(a.duration)
+                                ) {
+                                    a.instructor = t; // Sets activity instructor to current teacher
+                                    t_sched1.addExistingActivity(a); // Adds activity to teacher schedule
+//                                    System.out.println("Successfully added teacher to " + a.course.name + "-" + a.instance);
+                                }
+                            }
+                            break;
+                        case 2:
+                            int pair_day = -1;
+                            for (int[] ints : two_per_week_priority) {
+                                if (ints[0] == sched1.day_of_week) {
+                                    pair_day = ints[1];
+                                    break;
+                                }
+                                if (ints[1] == sched1.day_of_week) {
+                                    pair_day = ints[0];
+                                    break;
+                                }
+                            }
+                            DaySched sched2 = r.scheds.get(pair_day - 1);
+                            DaySched t_sched2 = t.scheds.get(pair_day - 1);
+                            for(Activity a : sched1.activities) {
+                                if(
+                                    a.instructor == null &&
+                                    t_sched1.checkVacant(a.start_time, a.duration) &&
+                                    t_sched2.checkVacant(a.start_time, a.duration) &&
+                                    a.course == current_course &&
+                                    t.addMinutes(a.duration * 2)
+                                ) {
+                                    a.instructor = t;
+                                    t_sched1.addExistingActivity(a);
+                                    for(Activity b : sched2.activities) {
+                                        if(b.instance == a.instance) {
+                                            t_sched2.addExistingActivity(b);
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        case 3:
+                            break;
+                        case 4:
+                            break;
+                        case 5:
+                            break;
+                        case 6:
+                            break;
+                        default:
+                            System.out.println("Invalid weekly_meeting value!");
+                            break;
+                    }
+                }
+            }
         }
     }
 
@@ -245,11 +333,51 @@ public class Timetable {
             for(DaySched sched : r.scheds) {
                 System.out.println("\tDAY " + sched.day_of_week + " [");
                 for(Activity a : sched.activities) {
-                    System.out.println("\t\t" + a.course.name + "-" + a.instance + " (" + a.start_time + "-" + a.getEndTime() + ")");
+                    if(a.instructor == null) {
+                        System.out.println("\t\t" + a.course.name + "-" + a.instance + " (" + a.start_time + "-" + a.getEndTime() + ")");
+                    } else {
+                        System.out.println("\t\t" + a.course.name + "-" + a.instance + " (" + a.start_time + "-" + a.getEndTime() + ") [" + a.instructor.name + "]");
+                    }
                 }
                 System.out.println("\t]");
             }
             System.out.println("}");
         }
     }
+
+//    public String repeat(String str, int repetition){
+//        if(repetition < 1) return null;
+//        StringBuilder sb = new StringBuilder();
+//        for(int i = 0; i < repetition; i++) sb.append(str);
+//        return sb.toString();
+//    }
+//
+//    public String leftPad(String input, char ch, int L){
+//        return String.format("%" + (-L) + "s", input).replace(' ', ch);
+//    }
+//
+//    public void printVisualize(){
+//        int COLWIDTH = 15;
+//
+//        for(Room r : rooms){
+//            System.out.println("Room " + r.id);
+//
+//            StringBuilder sb = new StringBuilder();
+//
+//            // Header
+//            sb.append(repeat("-", COLWIDTH * (r.scheds.size()) + 1) + '\n');
+//
+//            for(DaySched d : r.scheds){
+//                sb.append(leftPad("| Day " + d.day_of_week, ' ', COLWIDTH));
+//            }
+//            sb.append("|\n");
+//            sb.append(repeat("-", COLWIDTH * (r.scheds.size()) + 1) + '\n');
+//
+//            // Print Activities
+//
+//
+//            System.out.println(sb);
+//        }
+//
+//    }
 }
