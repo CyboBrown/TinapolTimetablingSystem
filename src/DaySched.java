@@ -66,15 +66,12 @@ public class DaySched {
                 i = -1;
             }
         }
-//        System.out.println(current_vacant);
         activities.add(new Activity(current_vacant, duration, course, room, instance));
         int current_vacant_index = (current_vacant - period_start) / Timetable.interval;
         for(int i = 0; i < duration / Timetable.interval; i++) {
             is_vacant[current_vacant_index + i] = false;
         }
         current_vacant = current_vacant + duration;
-//        System.out.println(current_vacant);
-//        System.out.println("___");
         return true;
     }
 
@@ -99,7 +96,6 @@ public class DaySched {
     public void printVacancy() { // For testing purposes, prints a list of periods showing their availability
         for(int i = 0; i < number_of_periods; i++) {
             System.out.println((Timetable.interval * i) + period_start + " - " + is_vacant[i]);
-//            is_vacant[i] = !Timetable.excluded_periods.contains((Timetable.interval * i) + period_start);
         }
     }
 }

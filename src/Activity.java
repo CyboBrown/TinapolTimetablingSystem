@@ -10,6 +10,7 @@ public class Activity {
         this.start_time = start_time;
         this.duration = duration;
         this.course = course;
+        this.room = null;
         this.instance = 0;
     }
 

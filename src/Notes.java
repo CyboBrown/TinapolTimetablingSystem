@@ -2,6 +2,7 @@ public @interface Notes {
     // Utilizes a priority-based vertical stacking algorithm... char
     // TODO: align all meetings in a week or prioritize weekly_meetings as well
     // TODO: cleanup code afterwards
+    // TODO: add more code explainer comments
 
     // ABANDONED CODES:
 

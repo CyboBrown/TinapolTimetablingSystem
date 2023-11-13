@@ -84,7 +84,7 @@ public class Timetable {
                     for(Room r : rooms) {
                         if(r.type == c.compatible_rooms.get(i)) {
                             for(int j = 0; j < two_per_week_priority.length; j++) {
-                                if(!include_saturday && two_per_week_priority[j][0] == 6 || two_per_week_priority[j][1] == 6) {
+                                if(!include_saturday && (two_per_week_priority[j][0] == 6 || two_per_week_priority[j][1] == 6)) {
                                     continue;
                                 }
                                 DaySched sched1 = r.scheds.get(Timetable.two_per_week_priority[j][0] - 1);
@@ -115,7 +115,9 @@ public class Timetable {
                     for(Room r : rooms) {
                         if(r.type == c.compatible_rooms.get(i)) {
                             for(int j = 0; j < three_per_week_priority.length; j++) {
-                                if(!include_saturday && three_per_week_priority[j][0] == 6 || three_per_week_priority[j][1] == 6 || three_per_week_priority[j][2] == 6) {
+                                if(!include_saturday && (three_per_week_priority[j][0] == 6 || three_per_week_priority[j][1] == 6 || three_per_week_priority[j][2] == 6)) {
+//                                    System.out.println("Skip");
+//                                    System.out.println(!include_saturday + " " + (three_per_week_priority[j][0] == 6) + " " + (three_per_week_priority[j][1] == 6) + " " + (three_per_week_priority[j][2] == 6));
                                     continue;
                                 }
                                 DaySched sched1 = r.scheds.get(Timetable.three_per_week_priority[j][0] - 1);
@@ -132,6 +134,7 @@ public class Timetable {
                                         classes_offered--;
                                         instance++;
                                     } else {
+//                                        System.out.println(c.name + "-" + (c.classes_offered - classes_offered) + ": " + success1 + " " + success2 + " " + success3);
                                         break;
                                     }
                                 }
@@ -270,7 +273,7 @@ public class Timetable {
                                     a.instructor == null &&
                                     t_sched1.checkVacant(a.start_time, a.duration) &&
                                     a.course == current_course &&
-                                    t.addMinutes(a.duration)
+                                    t.addMinutes(current_course.minutes)
                                 ) {
                                     a.instructor = t; // Sets activity instructor to current teacher
                                     t_sched1.addExistingActivity(a); // Adds activity to teacher schedule
@@ -293,30 +296,326 @@ public class Timetable {
                             DaySched sched2 = r.scheds.get(pair_day - 1);
                             DaySched t_sched2 = t.scheds.get(pair_day - 1);
                             for(Activity a : sched1.activities) {
+                                Activity b = null;
+                                for(Activity act : sched2.activities) {
+                                    if(act.instance == a.instance) {
+                                        b = act;
+                                        break;
+                                    }
+                                }
                                 if(
+                                    b != null &&
                                     a.instructor == null &&
+                                    b.instructor == null &&
                                     t_sched1.checkVacant(a.start_time, a.duration) &&
-                                    t_sched2.checkVacant(a.start_time, a.duration) &&
+                                    t_sched2.checkVacant(b.start_time, b.duration) &&
                                     a.course == current_course &&
-                                    t.addMinutes(a.duration * 2)
+                                    b.course == current_course &&
+                                    t.addMinutes(current_course.minutes)
                                 ) {
                                     a.instructor = t;
+                                    b.instructor = t;
                                     t_sched1.addExistingActivity(a);
-                                    for(Activity b : sched2.activities) {
-                                        if(b.instance == a.instance) {
-                                            t_sched2.addExistingActivity(b);
-                                        }
-                                    }
+                                    t_sched2.addExistingActivity(b);
+
                                 }
                             }
                             break;
                         case 3:
+                            int[] trio_days = new int[2];
+                            for (int[] ints : three_per_week_priority) {
+                                if (ints[0] == sched1.day_of_week) {
+                                    trio_days[0] = ints[1];
+                                    trio_days[1] = ints[2];
+                                    break;
+                                }
+                                if (ints[1] == sched1.day_of_week) {
+                                    trio_days[0] = ints[0];
+                                    trio_days[1] = ints[2];
+                                    break;
+                                }
+                                if (ints[2] == sched1.day_of_week) {
+                                    trio_days[0] = ints[0];
+                                    trio_days[1] = ints[1];
+                                    break;
+                                }
+                            }
+//                            System.out.println(sched1.day_of_week + "-" + trio_days[0] + "-" + trio_days[1]);
+                            sched2 = r.scheds.get(trio_days[0] - 1);
+                            DaySched sched3 = r.scheds.get(trio_days[1] - 1);
+                            t_sched2 = t.scheds.get(trio_days[0] - 1);
+                            DaySched t_sched3 = t.scheds.get(trio_days[1] - 1);
+                            for(Activity a : sched1.activities) {
+                                Activity b = null;
+                                Activity c = null;
+                                for(Activity act : sched2.activities) {
+                                    if(act.instance == a.instance) {
+                                        b = act;
+                                        break;
+                                    }
+                                }
+                                for(Activity act : sched3.activities) {
+                                    if(act.instance == a.instance) {
+                                        c = act;
+                                        break;
+                                    }
+                                }
+                                if(
+                                    b != null &&
+                                    c != null &&
+                                    a.instructor == null &&
+                                    b.instructor == null &&
+                                    c.instructor == null &&
+                                    t_sched1.checkVacant(a.start_time, a.duration) &&
+                                    t_sched2.checkVacant(b.start_time, b.duration) &&
+                                    t_sched3.checkVacant(c.start_time, c.duration) &&
+                                    a.course == current_course &&
+                                    b.course == current_course &&
+                                    c.course == current_course &&
+                                    t.addMinutes(current_course.minutes)
+                                ) {
+                                    a.instructor = t;
+                                    b.instructor = t;
+                                    c.instructor = t;
+                                    t_sched1.addExistingActivity(a);
+                                    t_sched2.addExistingActivity(b);
+                                    t_sched3.addExistingActivity(c);
+                                }
+                            }
                             break;
-                        case 4:
+                        case 4: // TODO: Improve code
+                            int current_day = sched1.day_of_week;
+                            int[] pair_days = new int[3];
+                            for(int j = 1, k = 0; j <= 5; j++) {
+                                if(j == current_day) continue;
+                                if(k >= 3) break;
+                                for(Activity a : r.scheds.get(j - 1).activities) {
+                                    if(a.course.equals(current_course)) {
+                                        pair_days[k] = j;
+                                        k++;
+                                        break;
+                                    }
+                                }
+                            }
+                            sched2 = r.scheds.get(pair_days[0] - 1);
+                            sched3 = r.scheds.get(pair_days[1] - 1);
+                            DaySched sched4 = r.scheds.get(pair_days[2] - 1);
+                            t_sched2 = t.scheds.get(pair_days[0] - 1);
+                            t_sched3 = t.scheds.get(pair_days[1] - 1);
+                            DaySched t_sched4 = t.scheds.get(pair_days[2] - 1);
+                            for(Activity a : sched1.activities) {
+                                Activity b = null;
+                                Activity c = null;
+                                Activity d = null;
+                                for(Activity act : sched2.activities) {
+                                    if(act.instance == a.instance) {
+                                        b = act;
+                                        break;
+                                    }
+                                }
+                                for(Activity act : sched3.activities) {
+                                    if(act.instance == a.instance) {
+                                        c = act;
+                                        break;
+                                    }
+                                }
+                                for(Activity act : sched4.activities) {
+                                    if(act.instance == a.instance) {
+                                        d = act;
+                                        break;
+                                    }
+                                }
+                                if(
+                                        b != null &&
+                                        c != null &&
+                                        d != null &&
+                                        a.instructor == null &&
+                                        b.instructor == null &&
+                                        c.instructor == null &&
+                                        d.instructor == null &&
+                                        t_sched1.checkVacant(a.start_time, a.duration) &&
+                                        t_sched2.checkVacant(b.start_time, b.duration) &&
+                                        t_sched3.checkVacant(c.start_time, c.duration) &&
+                                        t_sched4.checkVacant(d.start_time, d.duration) &&
+                                        a.course == current_course &&
+                                        b.course == current_course &&
+                                        c.course == current_course &&
+                                        d.course == current_course &&
+                                        t.addMinutes(current_course.minutes)
+                                ) {
+                                    a.instructor = t;
+                                    b.instructor = t;
+                                    c.instructor = t;
+                                    d.instructor = t;
+                                    t_sched1.addExistingActivity(a);
+                                    t_sched2.addExistingActivity(b);
+                                    t_sched3.addExistingActivity(c);
+                                    t_sched4.addExistingActivity(d);
+                                }
+                            }
                             break;
                         case 5:
+                            if(sched1.day_of_week != 1) break;
+                            sched2 = r.scheds.get(1);
+                            sched3 = r.scheds.get(2);
+                            sched4 = r.scheds.get(3);
+                            DaySched sched5 = r.scheds.get(4);
+                            t_sched2 = t.scheds.get(1);
+                            t_sched3 = t.scheds.get(2);
+                            t_sched4 = t.scheds.get(3);
+                            DaySched t_sched5 = t.scheds.get(4);
+                            for(Activity a : sched1.activities) {
+                                Activity b = null;
+                                Activity c = null;
+                                Activity d = null;
+                                Activity e = null;
+                                for(Activity act : sched2.activities) {
+                                    if(act.instance == a.instance) {
+                                        b = act;
+                                        break;
+                                    }
+                                }
+                                for(Activity act : sched3.activities) {
+                                    if(act.instance == a.instance) {
+                                        c = act;
+                                        break;
+                                    }
+                                }
+                                for(Activity act : sched4.activities) {
+                                    if(act.instance == a.instance) {
+                                        d = act;
+                                        break;
+                                    }
+                                }
+                                for(Activity act : sched5.activities) {
+                                    if(act.instance == a.instance) {
+                                        e = act;
+                                        break;
+                                    }
+                                }
+                                if(
+                                    b != null &&
+                                    c != null &&
+                                    d != null &&
+                                    e != null &&
+                                    a.instructor == null &&
+                                    b.instructor == null &&
+                                    c.instructor == null &&
+                                    d.instructor == null &&
+                                    e.instructor == null &&
+                                    t_sched1.checkVacant(a.start_time, a.duration) &&
+                                    t_sched2.checkVacant(b.start_time, b.duration) &&
+                                    t_sched3.checkVacant(c.start_time, c.duration) &&
+                                    t_sched4.checkVacant(d.start_time, d.duration) &&
+                                    t_sched5.checkVacant(e.start_time, e.duration) &&
+                                    a.course == current_course &&
+                                    b.course == current_course &&
+                                    c.course == current_course &&
+                                    d.course == current_course &&
+                                    e.course == current_course &&
+                                    t.addMinutes(current_course.minutes)
+                                ) {
+                                    a.instructor = t;
+                                    b.instructor = t;
+                                    c.instructor = t;
+                                    d.instructor = t;
+                                    e.instructor = t;
+                                    t_sched1.addExistingActivity(a);
+                                    t_sched2.addExistingActivity(b);
+                                    t_sched3.addExistingActivity(c);
+                                    t_sched4.addExistingActivity(d);
+                                    t_sched5.addExistingActivity(e);
+                                }
+                            }
                             break;
                         case 6:
+                            if(sched1.day_of_week != 1) break;
+                            sched2 = r.scheds.get(1);
+                            sched3 = r.scheds.get(2);
+                            sched4 = r.scheds.get(3);
+                            sched5 = r.scheds.get(4);
+                            DaySched sched6 = r.scheds.get(5);
+                            t_sched2 = t.scheds.get(1);
+                            t_sched3 = t.scheds.get(2);
+                            t_sched4 = t.scheds.get(3);
+                            t_sched5 = t.scheds.get(4);
+                            DaySched t_sched6 = t.scheds.get(5);
+                            for(Activity a : sched1.activities) {
+                                Activity b = null;
+                                Activity c = null;
+                                Activity d = null;
+                                Activity e = null;
+                                Activity f = null;
+                                for(Activity act : sched2.activities) {
+                                    if(act.instance == a.instance) {
+                                        b = act;
+                                        break;
+                                    }
+                                }
+                                for(Activity act : sched3.activities) {
+                                    if(act.instance == a.instance) {
+                                        c = act;
+                                        break;
+                                    }
+                                }
+                                for(Activity act : sched4.activities) {
+                                    if(act.instance == a.instance) {
+                                        d = act;
+                                        break;
+                                    }
+                                }
+                                for(Activity act : sched5.activities) {
+                                    if(act.instance == a.instance) {
+                                        e = act;
+                                        break;
+                                    }
+                                }
+                                for(Activity act : sched6.activities) {
+                                    if(act.instance == a.instance) {
+                                        f = act;
+                                        break;
+                                    }
+                                }
+                                if(
+                                    b != null &&
+                                    c != null &&
+                                    d != null &&
+                                    e != null &&
+                                    f != null &&
+                                    a.instructor == null &&
+                                    b.instructor == null &&
+                                    c.instructor == null &&
+                                    d.instructor == null &&
+                                    e.instructor == null &&
+                                    f.instructor == null &&
+                                    t_sched1.checkVacant(a.start_time, a.duration) &&
+                                    t_sched2.checkVacant(b.start_time, b.duration) &&
+                                    t_sched3.checkVacant(c.start_time, c.duration) &&
+                                    t_sched4.checkVacant(d.start_time, d.duration) &&
+                                    t_sched5.checkVacant(e.start_time, e.duration) &&
+                                    t_sched6.checkVacant(f.start_time, f.duration) &&
+                                    a.course == current_course &&
+                                    b.course == current_course &&
+                                    c.course == current_course &&
+                                    d.course == current_course &&
+                                    e.course == current_course &&
+                                    f.course == current_course &&
+                                    t.addMinutes(current_course.minutes)
+                                ) {
+                                    a.instructor = t;
+                                    b.instructor = t;
+                                    c.instructor = t;
+                                    d.instructor = t;
+                                    e.instructor = t;
+                                    f.instructor = t;
+                                    t_sched1.addExistingActivity(a);
+                                    t_sched2.addExistingActivity(b);
+                                    t_sched3.addExistingActivity(c);
+                                    t_sched4.addExistingActivity(d);
+                                    t_sched5.addExistingActivity(e);
+                                    t_sched5.addExistingActivity(f);
+                                }
+                            }
                             break;
                         default:
                             System.out.println("Invalid weekly_meeting value!");
