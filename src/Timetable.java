@@ -8,7 +8,7 @@ public class Timetable {
     List<Course> courses;
     List<Instructor> instructors;
 
-    static int interval = 30; // interval in minutes (15, 30, 60)
+    static int interval = 15; // interval in minutes (15, 30, 60)
     static int period_start = 420; // (7:00AM) - 7:30AM
     static int period_end = 1140; // 6:30PM - (7:00PM)
     static List<Integer> excluded_periods = Arrays.stream(new int[] {720, 750}).boxed().toList(); // 12:00PM, 12:30PM
@@ -261,8 +261,10 @@ public class Timetable {
     }
 
     private static void putInstructorToRooms(Instructor t, List<Room> rooms, List<Course> courses) {
+//        System.out.println("~~~~~" + t.name + "~~~~~");
         for(int i = 0; i < t.compatible_courses.size(); i++) {
             Course current_course = courses.get(t.compatible_courses.get(i));
+//            System.out.println(current_course.name);
             for(Room r : rooms) {
                 for(DaySched sched1 : r.scheds) {
                     DaySched t_sched1 = t.scheds.get(sched1.day_of_week - 1);
@@ -295,14 +297,19 @@ public class Timetable {
                             }
                             DaySched sched2 = r.scheds.get(pair_day - 1);
                             DaySched t_sched2 = t.scheds.get(pair_day - 1);
+//                            System.out.println(sched1.room.id);
                             for(Activity a : sched1.activities) {
                                 Activity b = null;
                                 for(Activity act : sched2.activities) {
-                                    if(act.instance == a.instance) {
+//                                    System.out.println("Passed here");
+                                    if(act.instance == a.instance && act.course == a.course) {
                                         b = act;
                                         break;
                                     }
                                 }
+//                                System.out.println((b != null) + " " +(a.instructor == null) + " " +(b.instructor == null) + " " +(t_sched1.checkVacant(a.start_time, a.duration)) + " " +(t_sched2.checkVacant(b.start_time, b.duration)) + " " +(a.course == current_course) + " " +(b.course == current_course));
+//                                if(a.instructor != null) System.out.println(a.instructor.name);
+//                                if(b.instructor != null) System.out.println(b.instructor.name);
                                 if(
                                     b != null &&
                                     a.instructor == null &&
@@ -349,13 +356,13 @@ public class Timetable {
                                 Activity b = null;
                                 Activity c = null;
                                 for(Activity act : sched2.activities) {
-                                    if(act.instance == a.instance) {
+                                    if(act.instance == a.instance && act.course == a.course) {
                                         b = act;
                                         break;
                                     }
                                 }
                                 for(Activity act : sched3.activities) {
-                                    if(act.instance == a.instance) {
+                                    if(act.instance == a.instance && act.course == a.course) {
                                         c = act;
                                         break;
                                     }
@@ -408,19 +415,19 @@ public class Timetable {
                                 Activity c = null;
                                 Activity d = null;
                                 for(Activity act : sched2.activities) {
-                                    if(act.instance == a.instance) {
+                                    if(act.instance == a.instance && act.course == a.course) {
                                         b = act;
                                         break;
                                     }
                                 }
                                 for(Activity act : sched3.activities) {
-                                    if(act.instance == a.instance) {
+                                    if(act.instance == a.instance && act.course == a.course) {
                                         c = act;
                                         break;
                                     }
                                 }
                                 for(Activity act : sched4.activities) {
-                                    if(act.instance == a.instance) {
+                                    if(act.instance == a.instance && act.course == a.course) {
                                         d = act;
                                         break;
                                     }
@@ -470,25 +477,25 @@ public class Timetable {
                                 Activity d = null;
                                 Activity e = null;
                                 for(Activity act : sched2.activities) {
-                                    if(act.instance == a.instance) {
+                                    if(act.instance == a.instance && act.course == a.course) {
                                         b = act;
                                         break;
                                     }
                                 }
                                 for(Activity act : sched3.activities) {
-                                    if(act.instance == a.instance) {
+                                    if(act.instance == a.instance && act.course == a.course) {
                                         c = act;
                                         break;
                                     }
                                 }
                                 for(Activity act : sched4.activities) {
-                                    if(act.instance == a.instance) {
+                                    if(act.instance == a.instance && act.course == a.course) {
                                         d = act;
                                         break;
                                     }
                                 }
                                 for(Activity act : sched5.activities) {
-                                    if(act.instance == a.instance) {
+                                    if(act.instance == a.instance && act.course == a.course) {
                                         e = act;
                                         break;
                                     }
@@ -547,31 +554,31 @@ public class Timetable {
                                 Activity e = null;
                                 Activity f = null;
                                 for(Activity act : sched2.activities) {
-                                    if(act.instance == a.instance) {
+                                    if(act.instance == a.instance && act.course == a.course) {
                                         b = act;
                                         break;
                                     }
                                 }
                                 for(Activity act : sched3.activities) {
-                                    if(act.instance == a.instance) {
+                                    if(act.instance == a.instance && act.course == a.course) {
                                         c = act;
                                         break;
                                     }
                                 }
                                 for(Activity act : sched4.activities) {
-                                    if(act.instance == a.instance) {
+                                    if(act.instance == a.instance && act.course == a.course) {
                                         d = act;
                                         break;
                                     }
                                 }
                                 for(Activity act : sched5.activities) {
-                                    if(act.instance == a.instance) {
+                                    if(act.instance == a.instance && act.course == a.course) {
                                         e = act;
                                         break;
                                     }
                                 }
                                 for(Activity act : sched6.activities) {
-                                    if(act.instance == a.instance) {
+                                    if(act.instance == a.instance && act.course == a.course) {
                                         f = act;
                                         break;
                                     }

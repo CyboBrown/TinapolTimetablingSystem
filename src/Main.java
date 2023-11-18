@@ -58,20 +58,38 @@ public class Main {
 //        instructors.add(new Instructor("Mrs. C", new int[] {1}, 2880));
 //        instructors.add(new Instructor("Mrs. D", new int[] {0}, 2880));
 
-        rooms.add(new Room("R01", 1));
-//        rooms.add(new Room("R02", 0));
-        courses.add(new Course("Math", 60, 1, 23, new int[] { 0, 1 }));
-        courses.add(new Course("English", 480, 4, 4, new int[] { 0, 1 }));
-//        courses.add(new Course("Science", 240, 4, 10, new int[] { 0, 1 }));
-        instructors.add(new Instructor("Mrs. A", new int[] {0, 1}, 2880)); // 2880 minutes = 48 hours
-        instructors.add(new Instructor("Mrs. B", new int[] {1, 0}, 2880));
-        instructors.add(new Instructor("Mrs. C", new int[] {0}, 2880));
-        instructors.add(new Instructor("Mrs. D", new int[] {1}, 2880));
+//        rooms.add(new Room("R01", 1));
+////        rooms.add(new Room("R02", 0));
+//        courses.add(new Course("Math", 60, 1, 23, new int[] { 0, 1 }));
+//        courses.add(new Course("English", 480, 4, 4, new int[] { 0, 1 }));
+////        courses.add(new Course("Science", 240, 4, 10, new int[] { 0, 1 }));
+//        instructors.add(new Instructor("Mrs. A", new int[] {0, 1}, 2880)); // 2880 minutes = 48 hours
+//        instructors.add(new Instructor("Mrs. B", new int[] {1, 0}, 2880));
+//        instructors.add(new Instructor("Mrs. C", new int[] {0}, 2880));
+//        instructors.add(new Instructor("Mrs. D", new int[] {1}, 2880));
 
 //        rooms.add(new Room("R01", 2));
 //        rooms.get(0).scheds.get(2).printVacancy();
 //        courses.add(new Course("Math", 120, 1, 6, new int[] { 2 }));
 //        instructors.add(new Instructor("Mrs. A", new int[] {0, 1, 2, 3}));
+
+        rooms.add(new Room("303 (Lecture)", 0));
+        rooms.add(new Room("201 (Lab)", 1));
+
+        //courses
+        courses.add(new Course("Automata Theory", 120, 2, 2, new int[] {0}));
+        courses.add(new Course("Intelligent Systems", 150, 2, 2, new int[] {1}));
+        courses.add(new Course("Information Management 2", 120, 3, 2, new int[] {1}));
+        courses.add(new Course("Quantitative Methods", 120, 2, 2, new int[] {0}));
+        courses.add(new Course("Systems Integration", 120, 3, 2, new int[] {1}));
+
+        //teachers
+        instructors.add(new Instructor("Mrs. Sta. Romana", new int[] {0}, 1440));
+        instructors.add(new Instructor("Mr. Aliac", new int[] {1}, 1440));
+        instructors.add(new Instructor("Mrs. Tulin", new int[] {2}, 1440));
+        instructors.add(new Instructor("Mrs. Bernus", new int[] {3}, 1440));
+        instructors.add(new Instructor("Mr. Padillo", new int[] {4}, 1440));
+
 
 
         Timetable timetable = new Timetable(rooms, courses, instructors);
