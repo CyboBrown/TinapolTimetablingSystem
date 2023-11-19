@@ -66,7 +66,8 @@ public class DaySched {
                 i = -1;
             }
         }
-        activities.add(new Activity(current_vacant, duration, course, room, instance));
+        activities.add(new Activity(current_vacant, duration, course, room, this, instance));
+        course.course_classes.add(activities.get(activities.size() - 1));
         int current_vacant_index = (current_vacant - period_start) / Timetable.interval;
         for(int i = 0; i < duration / Timetable.interval; i++) {
             is_vacant[current_vacant_index + i] = false;

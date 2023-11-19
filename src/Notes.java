@@ -3,6 +3,9 @@ public @interface Notes {
     // TODO: align all meetings in a week or prioritize weekly_meetings as well
     // TODO: cleanup code afterwards
     // TODO: add more code explainer comments
+    // TODO: implement requested constraints
+    // TODO: implement section to activity to section distribution
+    // TODO: create a manually customizable version of timetable
 
     // ABANDONED CODES:
 

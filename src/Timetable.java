@@ -7,6 +7,7 @@ public class Timetable {
     List<Room> rooms;
     List<Course> courses;
     List<Instructor> instructors;
+    List<Section> sections;
 
     static int interval = 15; // interval in minutes (15, 30, 60)
     static int period_start = 420; // (7:00AM) - 7:30AM
@@ -17,11 +18,13 @@ public class Timetable {
     static final int[][] three_per_week_priority = {{1, 3, 5}, {2, 4, 6}}; // 5 per week priority would be M-W-F then T-Th-S
     static boolean include_saturday = true; // If false, W-S and T-Th-S are nada
     static int number_of_room_types = 4; // 0 - Normal, 1 - Large, 2 - ScienceLab, 3 - ComLab
+    static int max_teacher_minutes_per_day = 480; // 8 hours (480) or 10 hours (600) or MAX
 
-    public Timetable(List<Room> rooms, List<Course> courses, List<Instructor> instructors) {
+    public Timetable(List<Room> rooms, List<Course> courses, List<Instructor> instructors, List<Section> sections) {
         this.rooms = rooms;
         this.courses = courses;
         this.instructors = instructors;
+        this.sections = sections;
         // Distribute Courses to Rooms
         List<Course> temp0 = new ArrayList<>(courses);
         for(int i = 1; i <= Timetable.number_of_room_types || !temp0.isEmpty(); i++) { // Prioritizes courses with fewer compatible rooms
@@ -45,6 +48,11 @@ public class Timetable {
                     j--;
                 }
             }
+        }
+        // Distribute Section to Classes
+//        List<Instructor> temp2 = new ArrayList<>(instructors);
+        for(Section s : sections) {
+            putSectionToRooms(s, rooms, courses);
         }
     }
 
@@ -633,6 +641,22 @@ public class Timetable {
         }
     }
 
+    private void putSectionToRooms(Section s, List<Room> rooms, List<Course> courses) {
+        for(Integer c : s.section_courses) { // Traverses all courses required for the section
+            Course curr_c = courses.get(c);
+            int weekly_meetings = curr_c.weekly_meetings;
+            for(Activity a : curr_c.course_classes) { // Sets section of the first available class/activity instance
+                if (a.section == null && weekly_meetings > 0) {
+                    a.section = s;
+                    s.scheds.get(a.sched.day_of_week - 1).addExistingActivity(a);
+                    weekly_meetings--;
+                } else if(weekly_meetings <= 0) {
+                    break;
+                }
+            }
+        }
+    }
+
     public void printTimetable() {
         for(Room r : rooms) {
             System.out.println("ROOM " + r.id + " {");
@@ -640,9 +664,14 @@ public class Timetable {
                 System.out.println("\tDAY " + sched.day_of_week + " [");
                 for(Activity a : sched.activities) {
                     if(a.instructor == null) {
-                        System.out.println("\t\t" + a.course.name + "-" + a.instance + " (" + a.start_time + "-" + a.getEndTime() + ")");
+                        System.out.print("\t\t" + a.course.name + "-" + a.instance + " (" + a.start_time + "-" + a.getEndTime() + ")");
                     } else {
-                        System.out.println("\t\t" + a.course.name + "-" + a.instance + " (" + a.start_time + "-" + a.getEndTime() + ") [" + a.instructor.name + "]");
+                        System.out.print("\t\t" + a.course.name + "-" + a.instance + " (" + a.start_time + "-" + a.getEndTime() + ") [" + a.instructor.name + "]");
+                    }
+                    if(a.section == null) {
+                        System.out.print(" [N.S.]\n");
+                    } else {
+                        System.out.print(" [" + a.section.id + "]\n");
                     }
                 }
                 System.out.println("\t]");
