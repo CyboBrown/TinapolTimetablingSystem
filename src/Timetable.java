@@ -3,7 +3,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Timetable {
-    public String name = "Sample Timetable";
+    public String name = "Unnamed Timetable";
     List<Room> rooms;
     List<Course> courses;
     List<Instructor> instructors;
@@ -18,10 +18,10 @@ public class Timetable {
     static final int[][] three_per_week_priority = {{1, 3, 5}, {2, 4, 6}}; // 5 per week priority would be M-W-F then T-Th-S
     static boolean include_saturday = true; // If false, W-S and T-Th-S are nada
     static int number_of_room_types = 4; // 0 - Normal, 1 - Large, 2 - ScienceLab, 3 - ComLab
-    static int max_instructor_minutes_per_day = 480; // 8 hours (480) or 10 hours (600) or MAX // TODO: implement following in code
-    static int max_student_minutes_per_day = 480; // 8 hours (480) or 10 hours (600) or MAX
-    static int max_room_minutes_per_day = 480; // 8 hours (480) or 10 hours (600) or MAX
-    static int max_consecutive_minutes = 240; // 4 hours
+    static int max_instructor_minutes_per_day = 480; // 8 hours (480) or 10 hours (600) or MAX // TODO: Not yet implemented
+    static int max_student_minutes_per_day = 480; // 8 hours (480) or 10 hours (600) or MAX // TODO: Not yet implemented
+    static int max_room_minutes_per_day = 480; // 8 hours (480) or 10 hours (600) or MAX // TODO: Not yet implemented
+    static int max_consecutive_minutes = 240; // 4 hours // TODO: Not yet implemented
 
     public Timetable(List<Room> rooms, List<Course> courses, List<Instructor> instructors, List<Section> sections) {
         this.rooms = rooms;
@@ -56,6 +56,7 @@ public class Timetable {
         for(Section s : sections) {
             putSectionToRooms(s, courses);
         }
+        checkTimetableHealth();
     }
 
     private void putCourseToRooms(Course c, List<Room> rooms) {
@@ -126,8 +127,6 @@ public class Timetable {
                         if(r.type == c.compatible_rooms.get(i)) {
                             for(int j = 0; j < three_per_week_priority.length; j++) {
                                 if(!include_saturday && (three_per_week_priority[j][0] == 6 || three_per_week_priority[j][1] == 6 || three_per_week_priority[j][2] == 6)) {
-//                                    System.out.println("Skip");
-//                                    System.out.println(!include_saturday + " " + (three_per_week_priority[j][0] == 6) + " " + (three_per_week_priority[j][1] == 6) + " " + (three_per_week_priority[j][2] == 6));
                                     continue;
                                 }
                                 DaySched sched1 = r.scheds.get(Timetable.three_per_week_priority[j][0] - 1);
@@ -144,7 +143,6 @@ public class Timetable {
                                         classes_offered--;
                                         instance++;
                                     } else {
-//                                        System.out.println(c.name + "-" + (c.classes_offered - classes_offered) + ": " + success1 + " " + success2 + " " + success3);
                                         break;
                                     }
                                 }
@@ -265,37 +263,34 @@ public class Timetable {
                 }
                 break;
             default:
-                System.out.println("Invalid weekly_meeting value!");
+                System.err.println("Error: Invalid weekly_meeting value for course distribution!");
                 break;
         }
     }
 
     private void putInstructorToRooms(Instructor t, List<Room> rooms, List<Course> courses) {
-//        System.out.println("~~~~~" + t.name + "~~~~~");
-        for(int i = 0; i < t.compatible_courses.size(); i++) {
+        for(int i = 0; i < t.compatible_courses.size(); i++) { // Traverses all instructor priority/compatible courses
             Course current_course = courses.get(t.compatible_courses.get(i));
-//            System.out.println(current_course.name);
             for(Room r : rooms) {
-                for(DaySched sched1 : r.scheds) {
-                    DaySched t_sched1 = t.scheds.get(sched1.day_of_week - 1);
+                for(DaySched sched1 : r.scheds) { // Traverses all daily schedules of the room from Monday to Saturday
+                    DaySched t_sched1 = t.scheds.get(sched1.day_of_week - 1); // Gets the teacher schedule for the currently traversed day
                     switch (current_course.weekly_meetings) {
                         case 1:
                             for(Activity a : sched1.activities) {
                                 if(
-                                    a.instructor == null &&
+                                    a.instructor == null && // Only assigns instructor is current activity instructor is unassigned
                                     t_sched1.checkVacant(a.start_time, a.duration) &&
                                     a.course == current_course &&
                                     t.addMinutes(current_course.minutes)
                                 ) {
                                     a.instructor = t; // Sets activity instructor to current teacher
                                     t_sched1.addExistingActivity(a); // Adds activity to teacher schedule
-//                                    System.out.println("Successfully added teacher to " + a.course.name + "-" + a.instance);
                                 }
                             }
                             break;
-                        case 2:
+                        case 2: // If the course meets two times a week
                             int pair_day = -1;
-                            for (int[] ints : two_per_week_priority) {
+                            for (int[] ints : two_per_week_priority) { // Searches for the pair schedule
                                 if (ints[0] == sched1.day_of_week) {
                                     pair_day = ints[1];
                                     break;
@@ -305,24 +300,19 @@ public class Timetable {
                                     break;
                                 }
                             }
-                            DaySched sched2 = r.scheds.get(pair_day - 1);
-                            DaySched t_sched2 = t.scheds.get(pair_day - 1);
-//                            System.out.println(sched1.room.id);
+                            DaySched sched2 = r.scheds.get(pair_day - 1); // Gets the room schedule for the pair day
+                            DaySched t_sched2 = t.scheds.get(pair_day - 1); // Get the teacher schedule for the pair day
                             for(Activity a : sched1.activities) {
                                 Activity b = null;
                                 for(Activity act : sched2.activities) {
-//                                    System.out.println("Passed here");
-                                    if(act.instance == a.instance && act.course == a.course) {
+                                    if(act.instance == a.instance && act.course == a.course) { // Checks if the activity is indeed the "pair" of the current activity
                                         b = act;
                                         break;
                                     }
                                 }
-//                                System.out.println((b != null) + " " +(a.instructor == null) + " " +(b.instructor == null) + " " +(t_sched1.checkVacant(a.start_time, a.duration)) + " " +(t_sched2.checkVacant(b.start_time, b.duration)) + " " +(a.course == current_course) + " " +(b.course == current_course));
-//                                if(a.instructor != null) System.out.println(a.instructor.name);
-//                                if(b.instructor != null) System.out.println(b.instructor.name);
                                 if(
                                     b != null &&
-                                    a.instructor == null &&
+                                    a.instructor == null && // Only adds to teacher when both classes are vacant and unassigned
                                     b.instructor == null &&
                                     t_sched1.checkVacant(a.start_time, a.duration) &&
                                     t_sched2.checkVacant(b.start_time, b.duration) &&
@@ -357,7 +347,6 @@ public class Timetable {
                                     break;
                                 }
                             }
-//                            System.out.println(sched1.day_of_week + "-" + trio_days[0] + "-" + trio_days[1]);
                             sched2 = r.scheds.get(trio_days[0] - 1);
                             DaySched sched3 = r.scheds.get(trio_days[1] - 1);
                             t_sched2 = t.scheds.get(trio_days[0] - 1);
@@ -400,7 +389,7 @@ public class Timetable {
                                 }
                             }
                             break;
-                        case 4: // TODO: Improve code
+                        case 4:
                             int current_day = sched1.day_of_week;
                             int[] pair_days = new int[3];
                             for(int j = 1, k = 0; j <= 5; j++) {
@@ -635,7 +624,7 @@ public class Timetable {
                             }
                             break;
                         default:
-                            System.out.println("Invalid weekly_meeting value!");
+                            System.err.println("Error: Invalid weekly_meeting value for instructor distribution!");
                             break;
                     }
                 }
@@ -682,39 +671,17 @@ public class Timetable {
         }
     }
 
-//    public String repeat(String str, int repetition){
-//        if(repetition < 1) return null;
-//        StringBuilder sb = new StringBuilder();
-//        for(int i = 0; i < repetition; i++) sb.append(str);
-//        return sb.toString();
-//    }
-//
-//    public String leftPad(String input, char ch, int L){
-//        return String.format("%" + (-L) + "s", input).replace(' ', ch);
-//    }
-//
-//    public void printVisualize(){
-//        int COLWIDTH = 15;
-//
-//        for(Room r : rooms){
-//            System.out.println("Room " + r.id);
-//
-//            StringBuilder sb = new StringBuilder();
-//
-//            // Header
-//            sb.append(repeat("-", COLWIDTH * (r.scheds.size()) + 1) + '\n');
-//
-//            for(DaySched d : r.scheds){
-//                sb.append(leftPad("| Day " + d.day_of_week, ' ', COLWIDTH));
-//            }
-//            sb.append("|\n");
-//            sb.append(repeat("-", COLWIDTH * (r.scheds.size()) + 1) + '\n');
-//
-//            // Print Activities
-//
-//
-//            System.out.println(sb);
-//        }
-//
-//    }
+    private void checkTimetableHealth() {
+        for(Course c : courses) {
+            int roomless_classes = c.classes_offered - c.course_classes.get(c.course_classes.size() - 1).instance + 1;
+            if(roomless_classes == 0) {
+                System.out.println("All " + c.name + " class(es) have rooms");
+            } else {
+                System.err.println(roomless_classes + " " + c.name + " class(es) have no rooms");
+            }
+        }
+        for(Instructor i : instructors) { // TODO: To implement health checker
+            System.out.println(i.name);
+        }
+    }
 }

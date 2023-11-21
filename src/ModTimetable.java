@@ -19,6 +19,7 @@ public class ModTimetable {
     private int max_instructor_minutes_per_day;
     private int max_student_minutes_per_day;
     private int max_room_minutes_per_day;
+    private  int max_consecutive_minutes;
 
     ModTimetable(Timetable timetable) {
         this.name = timetable.name;
@@ -38,6 +39,7 @@ public class ModTimetable {
         this.max_instructor_minutes_per_day = Timetable.max_instructor_minutes_per_day;
         this.max_student_minutes_per_day = Timetable.max_student_minutes_per_day;
         this.max_room_minutes_per_day = Timetable.max_room_minutes_per_day;
+        this.max_consecutive_minutes = Timetable.max_consecutive_minutes;
     }
 
     public Room getRoom(int index) {

@@ -59,7 +59,6 @@ public class DaySched {
             if(index_current_vacant + i >= number_of_periods) {
                 return false;
             }
-//            System.out.println(" - " + current_vacant + "~" + index_current_vacant + i); // TODO: Improve Code
             if(!is_vacant[index_current_vacant + i]) {
                 current_vacant += Timetable.interval;
                 index_current_vacant++;
@@ -68,9 +67,9 @@ public class DaySched {
         }
         activities.add(new Activity(current_vacant, duration, course, room, this, instance));
         course.course_classes.add(activities.get(activities.size() - 1));
-        int current_vacant_index = (current_vacant - period_start) / Timetable.interval;
+        index_current_vacant = (current_vacant - period_start) / Timetable.interval;
         for(int i = 0; i < duration / Timetable.interval; i++) {
-            is_vacant[current_vacant_index + i] = false;
+            is_vacant[index_current_vacant + i] = false;
         }
         current_vacant = current_vacant + duration;
         return true;
