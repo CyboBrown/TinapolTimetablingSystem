@@ -18,7 +18,10 @@ public class Timetable {
     static final int[][] three_per_week_priority = {{1, 3, 5}, {2, 4, 6}}; // 5 per week priority would be M-W-F then T-Th-S
     static boolean include_saturday = true; // If false, W-S and T-Th-S are nada
     static int number_of_room_types = 4; // 0 - Normal, 1 - Large, 2 - ScienceLab, 3 - ComLab
-    static int max_teacher_minutes_per_day = 480; // 8 hours (480) or 10 hours (600) or MAX
+    static int max_instructor_minutes_per_day = 480; // 8 hours (480) or 10 hours (600) or MAX // TODO: implement following in code
+    static int max_student_minutes_per_day = 480; // 8 hours (480) or 10 hours (600) or MAX
+    static int max_room_minutes_per_day = 480; // 8 hours (480) or 10 hours (600) or MAX
+    static int max_consecutive_minutes = 240; // 4 hours
 
     public Timetable(List<Room> rooms, List<Course> courses, List<Instructor> instructors, List<Section> sections) {
         this.rooms = rooms;
@@ -50,13 +53,12 @@ public class Timetable {
             }
         }
         // Distribute Section to Classes
-//        List<Instructor> temp2 = new ArrayList<>(instructors);
         for(Section s : sections) {
-            putSectionToRooms(s, rooms, courses);
+            putSectionToRooms(s, courses);
         }
     }
 
-    private static void putCourseToRooms(Course c, List<Room> rooms) {
+    private void putCourseToRooms(Course c, List<Room> rooms) {
         int classes_offered = c.classes_offered;
         int instance = 1;
         switch(c.weekly_meetings) {
@@ -268,7 +270,7 @@ public class Timetable {
         }
     }
 
-    private static void putInstructorToRooms(Instructor t, List<Room> rooms, List<Course> courses) {
+    private void putInstructorToRooms(Instructor t, List<Room> rooms, List<Course> courses) {
 //        System.out.println("~~~~~" + t.name + "~~~~~");
         for(int i = 0; i < t.compatible_courses.size(); i++) {
             Course current_course = courses.get(t.compatible_courses.get(i));
@@ -641,7 +643,7 @@ public class Timetable {
         }
     }
 
-    private void putSectionToRooms(Section s, List<Room> rooms, List<Course> courses) {
+    private void putSectionToRooms(Section s, List<Course> courses) {
         for(Integer c : s.section_courses) { // Traverses all courses required for the section
             Course curr_c = courses.get(c);
             int weekly_meetings = curr_c.weekly_meetings;

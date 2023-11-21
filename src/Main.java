@@ -107,7 +107,7 @@ public class Main {
 //        instructors.add(new Instructor("Mr. Teach", new int[] {0, 1}));
 
         Timetable timetable = new Timetable(rooms, courses, instructors, sections);
-        timetable.printTimetable();
+//        timetable.printTimetable();
 //        for(Instructor i : instructors) {
 //            i.printInstructorSchedule();
 //        }
@@ -119,6 +119,8 @@ public class Main {
 //        }
 
         ModTimetable mt = new ModTimetable(timetable);
+        mt.printAllRooms();
+        mt.printAllSections();
 //        timetable.instructors.get(0).scheds.get(2).printVacancy();
 //        timetable.rooms.get(0).scheds.get(2).printVacancy();
     }

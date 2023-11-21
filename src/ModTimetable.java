@@ -7,12 +7,37 @@ public class ModTimetable {
     private List<Instructor> instructors;
     private List<Section> sections;
 
+    private int interval;
+    private int period_start;
+    private int period_end;
+    private List<Integer> excluded_periods;
+    private int[] one_per_week_priority;
+    private int[][] two_per_week_priority;
+    private int[][] three_per_week_priority;
+    private boolean include_saturday;
+    private int number_of_room_types;
+    private int max_instructor_minutes_per_day;
+    private int max_student_minutes_per_day;
+    private int max_room_minutes_per_day;
+
     ModTimetable(Timetable timetable) {
         this.name = timetable.name;
         this.rooms = timetable.rooms;
         this.courses = timetable.courses;
         this.instructors = timetable.instructors;
         this.sections = timetable.sections;
+        this.interval = Timetable.interval;
+        this.period_start = Timetable.period_start;
+        this.period_end = Timetable.period_end;
+        this.excluded_periods = Timetable.excluded_periods;
+        this.one_per_week_priority = Timetable.one_per_week_priority;
+        this.two_per_week_priority = Timetable.two_per_week_priority;
+        this.three_per_week_priority = Timetable.three_per_week_priority;
+        this.include_saturday = Timetable.include_saturday;
+        this.number_of_room_types = Timetable.number_of_room_types;
+        this.max_instructor_minutes_per_day = Timetable.max_instructor_minutes_per_day;
+        this.max_student_minutes_per_day = Timetable.max_student_minutes_per_day;
+        this.max_room_minutes_per_day = Timetable.max_room_minutes_per_day;
     }
 
     public Room getRoom(int index) {
