@@ -34,7 +34,7 @@ public class Timetable {
             for(int j = 0; j < temp0.size(); j++) {
                 Course c = temp0.get(j);
                 if(c.number_of_compatible_rooms == i) {
-                    putCourseToRooms(c, rooms);
+                    putCourseToRooms(c);
                     temp0.remove(c);
                     j--;
                 }
@@ -46,7 +46,7 @@ public class Timetable {
             for(int j = 0; j < temp1.size(); j++) {
                 Instructor ins = temp1.get(j);
                 if(ins.compatible_courses.size() == i) {
-                    putInstructorToRooms(ins, rooms, courses);
+                    putInstructorToRooms(ins);
                     temp1.remove(ins);
                     j--;
                 }
@@ -54,12 +54,12 @@ public class Timetable {
         }
         // Distribute Section to Classes
         for(Section s : sections) {
-            putSectionToRooms(s, courses);
+            putSectionToRooms(s);
         }
         checkTimetableHealth();
     }
 
-    private void putCourseToRooms(Course c, List<Room> rooms) {
+    private void putCourseToRooms(Course c) {
         int classes_offered = c.classes_offered;
         int instance = 1;
         switch(c.weekly_meetings) {
@@ -268,7 +268,7 @@ public class Timetable {
         }
     }
 
-    private void putInstructorToRooms(Instructor t, List<Room> rooms, List<Course> courses) {
+    private void putInstructorToRooms(Instructor t) {
         for(int i = 0; i < t.compatible_courses.size(); i++) { // Traverses all instructor priority/compatible courses
             Course current_course = courses.get(t.compatible_courses.get(i));
             for(Room r : rooms) {
@@ -632,7 +632,7 @@ public class Timetable {
         }
     }
 
-    private void putSectionToRooms(Section s, List<Course> courses) {
+    private void putSectionToRooms(Section s) {
         for(Integer c : s.section_courses) { // Traverses all courses required for the section
             Course curr_c = courses.get(c);
             int weekly_meetings = curr_c.weekly_meetings;
@@ -673,7 +673,7 @@ public class Timetable {
 
     private void checkTimetableHealth() {
         for(Course c : courses) {
-            int roomless_classes = c.classes_offered - c.course_classes.get(c.course_classes.size() - 1).instance + 1;
+            int roomless_classes = c.classes_offered - c.course_classes.get(c.course_classes.size() - 1).instance;
             if(roomless_classes == 0) {
                 System.out.println("All " + c.name + " class(es) have rooms");
             } else {
