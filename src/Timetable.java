@@ -9,7 +9,7 @@ public class Timetable {
     List<Instructor> instructors;
     List<Section> sections;
 
-    static int interval = 15; // interval in minutes (15, 30, 60)
+    static int interval = 30; // interval in minutes (15, 30, 60)
     static int period_start = 420; // (7:00AM) - 7:30AM
     static int period_end = 1140; // 6:30PM - (7:00PM)
     static List<Integer> excluded_periods = Arrays.stream(new int[] {720, 750}).boxed().toList(); // 12:00PM, 12:30PM
@@ -56,7 +56,7 @@ public class Timetable {
         for(Section s : sections) {
             putSectionToRooms(s);
         }
-        checkTimetableHealth();
+//        checkTimetableHealth();
     }
 
     private void putCourseToRooms(Course c) {
@@ -637,7 +637,7 @@ public class Timetable {
             Course curr_c = courses.get(c);
             int weekly_meetings = curr_c.weekly_meetings;
             for(Activity a : curr_c.course_classes) { // Sets section of the first available class/activity instance
-                if (a.section == null && weekly_meetings > 0) {
+                if (a.section == null && weekly_meetings > 0 && s.scheds.get(a.sched.day_of_week - 1).checkVacant(a.start_time, a.duration)) {
                     a.section = s;
                     s.scheds.get(a.sched.day_of_week - 1).addExistingActivity(a);
                     weekly_meetings--;
@@ -671,17 +671,17 @@ public class Timetable {
         }
     }
 
-    private void checkTimetableHealth() {
-        for(Course c : courses) {
-            int roomless_classes = c.classes_offered - c.course_classes.get(c.course_classes.size() - 1).instance;
-            if(roomless_classes == 0) {
-                System.out.println("All " + c.name + " class(es) have rooms");
-            } else {
-                System.err.println(roomless_classes + " " + c.name + " class(es) have no rooms");
-            }
-        }
-        for(Instructor i : instructors) { // TODO: To implement health checker
-            System.out.println(i.name);
-        }
-    }
+//    private void checkTimetableHealth() {
+//        for(Course c : courses) {
+//            int roomless_classes = c.classes_offered - c.course_classes.get(c.course_classes.size() - 1).instance;
+//            if(roomless_classes == 0) {
+//                System.out.println("All " + c.name + " class(es) have rooms");
+//            } else {
+//                System.err.println(roomless_classes + " " + c.name + " class(es) have no rooms");
+//            }
+//        }
+//        for(Instructor i : instructors) { // TODO: To implement health checker
+//            System.out.println(i.name);
+//        }
+//    }
 }

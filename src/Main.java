@@ -84,6 +84,7 @@ public class Main {
 //        courses.add(new Course("Math", 120, 1, 6, new int[] { 2 }));
 //        instructors.add(new Instructor("Mrs. A", new int[] {0, 1, 2, 3}));
 
+
 //        //rooms
 //        rooms.add(new Room("303 (Lecture)", 0));
 //        rooms.add(new Room("201 (Lab)", 1))
@@ -120,6 +121,7 @@ public class Main {
 
         ModTimetable mt = new ModTimetable(timetable);
         mt.printAllRooms();
+        mt.printAllInstructors();
         mt.printAllSections();
 //        timetable.instructors.get(0).scheds.get(2).printVacancy();
 //        timetable.rooms.get(0).scheds.get(2).printVacancy();

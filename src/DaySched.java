@@ -56,6 +56,7 @@ public class DaySched {
     public boolean addActivity(Course course, int duration, int instance) { // Returns true if activity was successfully added
         int index_current_vacant = (current_vacant - period_start) / Timetable.interval;
         for(int i = 0; i < duration / Timetable.interval; i++) {
+            System.out.println(day_of_week + " " + index_current_vacant + " " + i + " " + duration);
             if(index_current_vacant + i >= number_of_periods) {
                 return false;
             }
