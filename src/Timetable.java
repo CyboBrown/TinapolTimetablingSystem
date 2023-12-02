@@ -11,17 +11,17 @@ public class Timetable {
 
     static int interval = 30; // interval in minutes (15, 30, 60)
     static int period_start = 420; // (7:00AM) - 7:30AM
-    static int period_end = 1140; // 6:30PM - (7:00PM)
+    static int period_end = 1140; // 6:30PM - (7:00PM)3
     static List<Integer> excluded_periods = Arrays.stream(new int[] {720, 750}).boxed().toList(); // 12:00PM, 12:30PM
     static final int[] one_per_week_priority = {3, 6, 1, 5, 2, 4}; // WED (MON to FRI except WED for 4 per week priority)
     static final int[][] two_per_week_priority = {{2, 4}, {1, 5}, {3, 6}}; // T-Th (high priority), M-F, W-S
     static final int[][] three_per_week_priority = {{1, 3, 5}, {2, 4, 6}}; // 5 per week priority would be M-W-F then T-Th-S
     static boolean include_saturday = true; // If false, W-S and T-Th-S are nada
     static int number_of_room_types = 4; // 0 - Normal, 1 - Large, 2 - ScienceLab, 3 - ComLab
-    static int max_instructor_minutes_per_day = 480; // 8 hours (480) or 10 hours (600) or MAX // TODO: Not yet implemented
-    static int max_student_minutes_per_day = 480; // 8 hours (480) or 10 hours (600) or MAX // TODO: Not yet implemented
-    static int max_room_minutes_per_day = 480; // 8 hours (480) or 10 hours (600) or MAX // TODO: Not yet implemented
-    static int max_consecutive_minutes = 240; // 4 hours // TODO: Not yet implemented
+    static int max_instructor_minutes_per_day = 480; // 8 hours (480) or 10 hours (600) or MAX
+    static int max_student_minutes_per_day = Integer.MAX_VALUE; // 8 hours (480) or 10 hours (600) or MAX
+    static int max_room_minutes_per_day = Integer.MAX_VALUE; // 8 hours (480) or 10 hours (600) or MAX
+    static int max_consecutive_minutes = 480; // 4 hours or MAX // TODO: Not yet implemented
 
     public Timetable(List<Room> rooms, List<Course> courses, List<Instructor> instructors, List<Section> sections) {
         this.rooms = rooms;
@@ -73,7 +73,7 @@ public class Timetable {
                                 }
                                 DaySched sched = r.scheds.get(Timetable. one_per_week_priority[j] - 1); // -1 because Sunday was not included in the scheds array of Room
                                 while(classes_offered != 0) { // Add classes of the same course to the rooms until all classes have been added to the schedule
-                                    boolean success = sched.addActivity(c, c.minutes, instance);
+                                    boolean success = sched.checkViolation(r, c.minutes) && sched.addActivity(c, c.minutes, instance); // Checks if it violates the maximum minutes per day before adding activity
                                     if(success) {
                                         classes_offered--;
                                         instance++;
@@ -101,8 +101,8 @@ public class Timetable {
                                 DaySched sched1 = r.scheds.get(Timetable.two_per_week_priority[j][0] - 1);
                                 DaySched sched2 = r.scheds.get(Timetable.two_per_week_priority[j][1] - 1);
                                 while(classes_offered != 0) {
-                                    boolean success1 = sched1.checkConflict(duration); // Check conflicts before adding to make sure that all meetings in a particular class of the course are added
-                                    boolean success2 = sched2.checkConflict(duration);
+                                    boolean success1 = sched1.checkConflict(duration) && sched1.checkViolation(r, duration); // Check conflicts before adding to make sure that all meetings in a particular class of the course are added
+                                    boolean success2 = sched2.checkConflict(duration) && sched2.checkViolation(r, duration); // Also checks if it violates the maximum minutes per day
                                     if(success1 & success2) {
                                         sched1.addActivity(c, duration, instance);
                                         sched2.addActivity(c, duration, instance);
@@ -133,9 +133,9 @@ public class Timetable {
                                 DaySched sched2 = r.scheds.get(Timetable.three_per_week_priority[j][1] - 1);
                                 DaySched sched3 = r.scheds.get(Timetable.three_per_week_priority[j][2] - 1);
                                 while(classes_offered != 0) {
-                                    boolean success1 = sched1.checkConflict(duration);
-                                    boolean success2 = sched2.checkConflict(duration);
-                                    boolean success3 = sched3.checkConflict(duration);
+                                    boolean success1 = sched1.checkConflict(duration) && sched1.checkViolation(r, duration);
+                                    boolean success2 = sched2.checkConflict(duration) && sched2.checkViolation(r, duration);
+                                    boolean success3 = sched3.checkConflict(duration) && sched3.checkViolation(r, duration);
                                     if(success1 & success2 & success3) {
                                         sched1.addActivity(c, duration, instance);
                                         sched2.addActivity(c, duration, instance);
@@ -168,10 +168,10 @@ public class Timetable {
                                     sched[k] = r.scheds.get(temp);
                                 }
                                 while(classes_offered != 0) {
-                                    boolean success1 = sched[0].checkConflict(duration);
-                                    boolean success2 = sched[1].checkConflict(duration);
-                                    boolean success3 = sched[2].checkConflict(duration);
-                                    boolean success4 = sched[3].checkConflict(duration);
+                                    boolean success1 = sched[0].checkConflict(duration) && sched[0].checkViolation(r, duration);
+                                    boolean success2 = sched[1].checkConflict(duration) && sched[1].checkViolation(r, duration);
+                                    boolean success3 = sched[2].checkConflict(duration) && sched[2].checkViolation(r, duration);
+                                    boolean success4 = sched[3].checkConflict(duration) && sched[3].checkViolation(r, duration);
                                     if(success1 & success2 & success3 & success4) {
                                         for(int k = 0; k < 4; k++) {
                                             sched[k].addActivity(c, duration, instance);
@@ -201,11 +201,11 @@ public class Timetable {
                             DaySched sched4 = r.scheds.get(3);
                             DaySched sched5 = r.scheds.get(4);
                             while(classes_offered != 0) {
-                                boolean success1 = sched1.checkConflict(duration);
-                                boolean success2 = sched2.checkConflict(duration);
-                                boolean success3 = sched3.checkConflict(duration);
-                                boolean success4 = sched4.checkConflict(duration);
-                                boolean success5 = sched5.checkConflict(duration);
+                                boolean success1 = sched1.checkConflict(duration) && sched1.checkViolation(r, duration);
+                                boolean success2 = sched2.checkConflict(duration) && sched2.checkViolation(r, duration);
+                                boolean success3 = sched3.checkConflict(duration) && sched3.checkViolation(r, duration);
+                                boolean success4 = sched4.checkConflict(duration) && sched4.checkViolation(r, duration);
+                                boolean success5 = sched5.checkConflict(duration) && sched5.checkViolation(r, duration);
                                 if(success1 & success2 & success3 & success4 & success5) {
                                     sched1.addActivity(c, duration, instance);
                                     sched2.addActivity(c, duration, instance);
@@ -237,12 +237,12 @@ public class Timetable {
                             DaySched sched5 = r.scheds.get(4);
                             DaySched sched6 = r.scheds.get(5);
                             while(classes_offered != 0) {
-                                boolean success1 = sched1.checkConflict(duration);
-                                boolean success2 = sched2.checkConflict(duration);
-                                boolean success3 = sched3.checkConflict(duration);
-                                boolean success4 = sched4.checkConflict(duration);
-                                boolean success5 = sched5.checkConflict(duration);
-                                boolean success6 = sched6.checkConflict(duration);
+                                boolean success1 = sched1.checkConflict(duration) && sched1.checkViolation(r, duration);
+                                boolean success2 = sched2.checkConflict(duration) && sched2.checkViolation(r, duration);
+                                boolean success3 = sched3.checkConflict(duration) && sched3.checkViolation(r, duration);
+                                boolean success4 = sched4.checkConflict(duration) && sched4.checkViolation(r, duration);
+                                boolean success5 = sched5.checkConflict(duration) && sched5.checkViolation(r, duration);
+                                boolean success6 = sched6.checkConflict(duration) && sched6.checkViolation(r, duration);
                                 if(success1 & success2 & success3 & success4 & success5 & success6) {
                                     sched1.addActivity(c, duration, instance);
                                     sched2.addActivity(c, duration, instance);
@@ -281,7 +281,8 @@ public class Timetable {
                                     a.instructor == null && // Only assigns instructor is current activity instructor is unassigned
                                     t_sched1.checkVacant(a.start_time, a.duration) &&
                                     a.course == current_course &&
-                                    t.addMinutes(current_course.minutes)
+                                    t.addMinutes(current_course.minutes) &&
+                                    t_sched1.checkViolation(t, a.duration)
                                 ) {
                                     a.instructor = t; // Sets activity instructor to current teacher
                                     t_sched1.addExistingActivity(a); // Adds activity to teacher schedule
@@ -318,7 +319,9 @@ public class Timetable {
                                     t_sched2.checkVacant(b.start_time, b.duration) &&
                                     a.course == current_course &&
                                     b.course == current_course &&
-                                    t.addMinutes(current_course.minutes)
+                                    t.addMinutes(current_course.minutes) &&
+                                    t_sched1.checkViolation(t, a.duration) &&
+                                    t_sched2.checkViolation(t, b.duration)
                                 ) {
                                     a.instructor = t;
                                     b.instructor = t;
@@ -378,7 +381,10 @@ public class Timetable {
                                     a.course == current_course &&
                                     b.course == current_course &&
                                     c.course == current_course &&
-                                    t.addMinutes(current_course.minutes)
+                                    t.addMinutes(current_course.minutes) &&
+                                    t_sched1.checkViolation(t, a.duration) &&
+                                    t_sched2.checkViolation(t, b.duration) &&
+                                    t_sched3.checkViolation(t, c.duration)
                                 ) {
                                     a.instructor = t;
                                     b.instructor = t;
@@ -447,7 +453,11 @@ public class Timetable {
                                         b.course == current_course &&
                                         c.course == current_course &&
                                         d.course == current_course &&
-                                        t.addMinutes(current_course.minutes)
+                                        t.addMinutes(current_course.minutes) &&
+                                        t_sched1.checkViolation(t, a.duration) &&
+                                        t_sched2.checkViolation(t, b.duration) &&
+                                        t_sched3.checkViolation(t, c.duration) &&
+                                        t_sched4.checkViolation(t, d.duration)
                                 ) {
                                     a.instructor = t;
                                     b.instructor = t;
@@ -519,7 +529,12 @@ public class Timetable {
                                     c.course == current_course &&
                                     d.course == current_course &&
                                     e.course == current_course &&
-                                    t.addMinutes(current_course.minutes)
+                                    t.addMinutes(current_course.minutes) &&
+                                    t_sched1.checkViolation(t, a.duration) &&
+                                    t_sched2.checkViolation(t, b.duration) &&
+                                    t_sched3.checkViolation(t, c.duration) &&
+                                    t_sched4.checkViolation(t, d.duration) &&
+                                    t_sched5.checkViolation(t, e.duration)
                                 ) {
                                     a.instructor = t;
                                     b.instructor = t;
@@ -606,7 +621,13 @@ public class Timetable {
                                     d.course == current_course &&
                                     e.course == current_course &&
                                     f.course == current_course &&
-                                    t.addMinutes(current_course.minutes)
+                                    t.addMinutes(current_course.minutes) &&
+                                    t_sched1.checkViolation(t, a.duration) &&
+                                    t_sched2.checkViolation(t, b.duration) &&
+                                    t_sched3.checkViolation(t, c.duration) &&
+                                    t_sched4.checkViolation(t, d.duration) &&
+                                    t_sched5.checkViolation(t, e.duration) &&
+                                    t_sched6.checkViolation(t, f.duration)
                                 ) {
                                     a.instructor = t;
                                     b.instructor = t;
@@ -637,7 +658,8 @@ public class Timetable {
             Course curr_c = courses.get(c);
             int weekly_meetings = curr_c.weekly_meetings;
             for(Activity a : curr_c.course_classes) { // Sets section of the first available class/activity instance
-                if (a.section == null && weekly_meetings > 0 && s.scheds.get(a.sched.day_of_week - 1).checkVacant(a.start_time, a.duration)) {
+                DaySched curr_sched = s.scheds.get(a.sched.day_of_week - 1);
+                if (a.section == null && weekly_meetings > 0 && curr_sched.checkVacant(a.start_time, a.duration) && curr_sched.checkViolation(s, a.duration)) {
                     a.section = s;
                     s.scheds.get(a.sched.day_of_week - 1).addExistingActivity(a);
                     weekly_meetings--;

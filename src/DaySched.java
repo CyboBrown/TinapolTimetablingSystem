@@ -9,6 +9,7 @@ public class DaySched {
     public List<Activity> activities;
     public int number_of_periods;
     public boolean[] is_vacant;
+    private int total_occupied_minutes = 0;
     private int current_vacant; // This serves as the TOP of the STACK of classes within the schedule
 
     public DaySched(int day_of_week, Room room) {
@@ -53,10 +54,22 @@ public class DaySched {
         return true;
     }
 
+    public boolean checkViolation(Room r, int duration) {
+        return total_occupied_minutes + duration <= Timetable.max_room_minutes_per_day;
+    }
+
+    public boolean checkViolation(Instructor i, int duration) {
+        return total_occupied_minutes + duration <= Timetable.max_instructor_minutes_per_day;
+    }
+
+    public boolean checkViolation(Section s, int duration) {
+        return total_occupied_minutes + duration <= Timetable.max_student_minutes_per_day;
+    }
+
     public boolean addActivity(Course course, int duration, int instance) { // Returns true if activity was successfully added
         int index_current_vacant = (current_vacant - period_start) / Timetable.interval;
         for(int i = 0; i < duration / Timetable.interval; i++) {
-            System.out.println(day_of_week + " " + index_current_vacant + " " + i + " " + duration);
+//            System.out.println(day_of_week + " " + index_current_vacant + " " + i + " " + duration);
             if(index_current_vacant + i >= number_of_periods) {
                 return false;
             }
@@ -69,6 +82,7 @@ public class DaySched {
         activities.add(new Activity(current_vacant, duration, course, room, this, instance));
         course.course_classes.add(activities.get(activities.size() - 1));
         index_current_vacant = (current_vacant - period_start) / Timetable.interval;
+        total_occupied_minutes += duration;
         for(int i = 0; i < duration / Timetable.interval; i++) {
             is_vacant[index_current_vacant + i] = false;
         }
@@ -79,6 +93,7 @@ public class DaySched {
     public void addExistingActivity(Activity a) {
         activities.add(a);
         int current_index = (a.start_time - period_start) / Timetable.interval;
+        total_occupied_minutes += a.duration;
         for(int i = 0; i < a.duration / Timetable.interval; i++) {
             is_vacant[current_index + i] = false;
         }
