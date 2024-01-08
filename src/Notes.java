@@ -100,4 +100,115 @@ public @interface Notes {
 //                                    t_sched2.addExistingActivity(a);
 //                                }
 //                            }
+
+//    private void checkTimetableHealth() {
+//        for(Course c : courses) {
+//            int roomless_classes = c.classes_offered - c.course_classes.get(c.course_classes.size() - 1).instance;
+//            if(roomless_classes == 0) {
+//                System.out.println("All " + c.name + " class(es) have rooms");
+//            } else {
+//                System.err.println(roomless_classes + " " + c.name + " class(es) have no rooms");
+//            }
+//        }
+//        for(Instructor i : instructors) {
+//            System.out.println(i.name);
+//        }
+//    }
+
+//            switch(c.lecture_component.weekly_meetings) {
+//                case 1:
+//                    for(int i = 0; i < c.lecture_component.number_of_compatible_rooms; i++) {
+//                        for(Room r : rooms) {
+//                            if(r.type == c.lecture_component.compatible_rooms.get(i)) { // Loops through all compatible rooms based on the order of the course's compatible_rooms list
+//                                for(int j = 0; j < one_per_week_priority.length; j++) { // Loops through all available days based on priority and once the priority date is filled, it will proceed to the next priority
+//                                    if(!include_saturday && one_per_week_priority[j] == 6) { // Skips saturday if include_saturday is disabled
+//                                        continue;
+//                                    }
+//                                    DaySched sched = r.scheds.get(Timetable. one_per_week_priority[j] - 1); // -1 because Sunday was not included in the scheds array of Room
+//                                    while(classes_offered != 0) { // Add classes of the same course to the rooms until all classes have been added to the schedule
+//                                        boolean success = sched.checkViolation(r, c.minutes) && sched.addActivity(c, c.minutes, instance); // Checks if it violates the maximum minutes per day before adding activity
+//                                        if(success) {
+//                                            classes_offered--;
+//                                            instance++;
+//                                        } else { // Runs the following code if adding of classes is unsuccessful
+//                                            break;
+//                                        }
+//                                    }
+//                                    if(classes_offered == 0) break; // Proceeds to next priority day if day is full
+//                                }
+//                            }
+//                            if(classes_offered == 0) break; // Proceeds to next priority room of the same type if room is full
+//                        }
+//                        if(classes_offered == 0) break; // Proceeds to the next priority type of rooms if the current type of rooms are all occupied
+//                    }
+//                    break;
+//                case 2:
+//                    int duration = c.minutes / 2; // Divides the total hours per week to the number of meetings per week
+//                    for(int i = 0; i < c.number_of_compatible_rooms; i++) {
+//                        for(Room r : rooms) {
+//                            if(r.type == c.compatible_rooms.get(i)) {
+//                                for(int j = 0; j < two_per_week_priority.length; j++) {
+//                                    if(!include_saturday && (two_per_week_priority[j][0] == 6 || two_per_week_priority[j][1] == 6)) {
+//                                        continue;
+//                                    }
+//                                    DaySched sched1 = r.scheds.get(Timetable.two_per_week_priority[j][0] - 1);
+//                                    DaySched sched2 = r.scheds.get(Timetable.two_per_week_priority[j][1] - 1);
+//                                    while(classes_offered != 0) {
+//                                        boolean success1 = sched1.checkConflict(duration) && sched1.checkViolation(r, duration); // Check conflicts before adding to make sure that all meetings in a particular class of the course are added
+//                                        boolean success2 = sched2.checkConflict(duration) && sched2.checkViolation(r, duration); // Also checks if it violates the maximum minutes per day
+//                                        if(success1 & success2) {
+//                                            sched1.addActivity(c, duration, instance);
+//                                            sched2.addActivity(c, duration, instance);
+//                                            classes_offered--;
+//                                            instance++;
+//                                        } else {
+//                                            break;
+//                                        }
+//                                    }
+//                                    if(classes_offered == 0) break;
+//                                }
+//                            }
+//                            if(classes_offered == 0) break;
+//                        }
+//                        if(classes_offered == 0) break;
+//                    }
+//                    break;
+//                case 3:
+//                    duration = c.minutes / 3;
+//                    for(int i = 0; i < c.number_of_compatible_rooms; i++) {
+//                        for(Room r : rooms) {
+//                            if(r.type == c.compatible_rooms.get(i)) {
+//                                for(int j = 0; j < three_per_week_priority.length; j++) {
+//                                    if(!include_saturday && (three_per_week_priority[j][0] == 6 || three_per_week_priority[j][1] == 6 || three_per_week_priority[j][2] == 6)) {
+//                                        continue;
+//                                    }
+//                                    DaySched sched1 = r.scheds.get(Timetable.three_per_week_priority[j][0] - 1);
+//                                    DaySched sched2 = r.scheds.get(Timetable.three_per_week_priority[j][1] - 1);
+//                                    DaySched sched3 = r.scheds.get(Timetable.three_per_week_priority[j][2] - 1);
+//                                    while(classes_offered != 0) {
+//                                        boolean success1 = sched1.checkConflict(duration) && sched1.checkViolation(r, duration);
+//                                        boolean success2 = sched2.checkConflict(duration) && sched2.checkViolation(r, duration);
+//                                        boolean success3 = sched3.checkConflict(duration) && sched3.checkViolation(r, duration);
+//                                        if(success1 & success2 & success3) {
+//                                            sched1.addActivity(c, duration, instance);
+//                                            sched2.addActivity(c, duration, instance);
+//                                            sched3.addActivity(c, duration, instance);
+//                                            classes_offered--;
+//                                            instance++;
+//                                        } else {
+//                                            break;
+//                                        }
+//                                    }
+//                                    if(classes_offered == 0) break;
+//                                }
+//                            }
+//                            if(classes_offered == 0) break;
+//                        }
+//                        if(classes_offered == 0) break;
+//                    }
+//                    break;
+//                default:
+//                    System.err.println("Error: Invalid weekly_meeting value for course distribution!");
+//                    break;
+//            }
 }

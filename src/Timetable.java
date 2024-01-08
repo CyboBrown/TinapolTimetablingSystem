@@ -21,45 +21,91 @@ public class Timetable {
     static int max_instructor_minutes_per_day = 480; // 8 hours (480) or 10 hours (600) or MAX
     static int max_student_minutes_per_day = Integer.MAX_VALUE; // 8 hours (480) or 10 hours (600) or MAX
     static int max_room_minutes_per_day = Integer.MAX_VALUE; // 8 hours (480) or 10 hours (600) or MAX
-    static int max_consecutive_minutes = 480; // 4 hours or MAX // TODO: Not yet implemented
+    static int max_consecutive_minutes = 480; // (for instructors) 4 hours or MAX // TODO: Not yet implemented
 
     public Timetable(List<Room> rooms, List<Course> courses, List<Instructor> instructors, List<Section> sections) {
         this.rooms = rooms;
         this.courses = courses;
         this.instructors = instructors;
         this.sections = sections;
-        // Distribute Courses to Rooms
-        List<Course> temp0 = new ArrayList<>(courses);
-        for(int i = 1; i <= Timetable.number_of_room_types || !temp0.isEmpty(); i++) { // Prioritizes courses with fewer compatible rooms
-            for(int j = 0; j < temp0.size(); j++) {
-                Course c = temp0.get(j);
-                if(c.number_of_compatible_rooms == i) {
-                    putCourseToRooms(c);
-                    temp0.remove(c);
-                    j--;
+
+        for(int h = 0; h < 10; h++) {
+            // Distribute Courses to Rooms
+            List<Course> temp0 = new ArrayList<>(courses);
+            for(int i = 1; i <= Timetable.number_of_room_types || !temp0.isEmpty(); i++) { // Prioritizes courses with fewer compatible rooms
+                for(int j = 0; j < temp0.size(); j++) {
+                    Course c = temp0.get(j);
+                    if(c.number_of_compatible_rooms == i) {
+                        putCourseToRooms(c);
+                        temp0.remove(c);
+                        j--;
+                    }
+                }
+            }
+            // Distribute Instructors to Classes
+            List<Instructor> temp1 = new ArrayList<>(instructors);
+            for(int i = 0; i < Course.count || !temp1.isEmpty(); i++) { // Prioritizes instructors with fewer compatible courses
+                for(int j = 0; j < temp1.size(); j++) {
+                    Instructor ins = temp1.get(j);
+                    if(ins.compatible_courses.size() == i) {
+                        putInstructorToRooms(ins);
+                        temp1.remove(ins);
+                        j--;
+                    }
+                }
+            }
+            // Distribute Section to Classes
+            for(Section s : sections) {
+                putSectionToRooms(s);
+            }
+            // Checks if all sections have complete courses
+            if(checkSectionCompletion()) {
+                // Remove all activities with no sections
+                removeNoSection();
+                System.out.println("Completed after " + h + " increment(s).");
+                break;
+            }
+            // Resets all Rooms, Courses, Instructors, and Sections
+            for(Room r : rooms) {
+                r.scheds.clear();
+                for(int i = 1; i <= 5; i++) {
+                    r.scheds.add(new DaySched(i, r));
+                }
+                if(Timetable.include_saturday) {
+                    r.scheds.add(new DaySched(6, r));
+                }
+            }
+            for(Course c : courses) {
+                c.course_classes.clear();
+                c.classes_offered++; // Increment the number of course offering per course;
+            }
+            for(Instructor ins : instructors) {
+                ins.scheds.clear();
+                ins.total_minutes = 0;
+                for(int i = 1; i <= 5; i++) {
+                    ins.scheds.add(new DaySched(i, period_start, period_end));
+                }
+                if(Timetable.include_saturday) {
+                    ins.scheds.add(new DaySched(6, period_start, period_end));
+                }
+            }
+            for(Section s : sections) {
+                s.scheds.clear();
+                for(int i = 1; i <= 5; i++) {
+                    s.scheds.add(new DaySched(i, period_start, period_end));
+                }
+                if(Timetable.include_saturday) {
+                    s.scheds.add(new DaySched(6, period_start, period_end));
                 }
             }
         }
-        // Distribute Instructors to Classes
-        List<Instructor> temp1 = new ArrayList<>(instructors);
-        for(int i = 0; i < Course.count || !temp1.isEmpty(); i++) { // Prioritizes instructors with fewer compatible courses
-            for(int j = 0; j < temp1.size(); j++) {
-                Instructor ins = temp1.get(j);
-                if(ins.compatible_courses.size() == i) {
-                    putInstructorToRooms(ins);
-                    temp1.remove(ins);
-                    j--;
-                }
-            }
-        }
-        // Distribute Section to Classes
-        for(Section s : sections) {
-            putSectionToRooms(s);
-        }
-//        checkTimetableHealth();
     }
 
     private void putCourseToRooms(Course c) {
+        putCourseToRooms(c, null);
+    }
+
+    private void putCourseToRooms(Course c, Course lab) {
         int classes_offered = c.classes_offered;
         int instance = 1;
         switch(c.weekly_meetings) {
@@ -71,9 +117,10 @@ public class Timetable {
                                 if(!include_saturday && one_per_week_priority[j] == 6) { // Skips saturday if include_saturday is disabled
                                     continue;
                                 }
-                                DaySched sched = r.scheds.get(Timetable. one_per_week_priority[j] - 1); // -1 because Sunday was not included in the scheds array of Room
+                                DaySched sched = r.scheds.get(Timetable.one_per_week_priority[j] - 1); // -1 because Sunday was not included in the scheds array of Room
                                 while(classes_offered != 0) { // Add classes of the same course to the rooms until all classes have been added to the schedule
                                     boolean success = sched.checkViolation(r, c.minutes) && sched.addActivity(c, c.minutes, instance); // Checks if it violates the maximum minutes per day before adding activity
+//                                    lab.
                                     if(success) {
                                         classes_offered--;
                                         instance++;
@@ -266,6 +313,9 @@ public class Timetable {
                 System.err.println("Error: Invalid weekly_meeting value for course distribution!");
                 break;
         }
+//        if(c.lecture_component != null && c.weekly_meetings <= 3) {
+//            putCourseToRooms(c.lecture_component, c);
+//        }
     }
 
     private void putInstructorToRooms(Instructor t) {
@@ -670,6 +720,51 @@ public class Timetable {
         }
     }
 
+    private boolean checkSectionCompletion() {
+        for(Section s : sections) {
+            for(int c_id : s.section_courses) {
+                Course c = courses.get(c_id);
+                boolean hasSection = false;
+                for(Activity a : c.course_classes) {
+                    if(a.section == s) {
+                        hasSection = true;
+                        break;
+                    }
+                }
+                if(!hasSection) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private void removeNoSection() { // removes all courses with no sections
+        for(Course c : courses) {
+            for(int i = c.course_classes.size() - 1; i >= 0; i--) { // Traverse all activities in course to check if they have sections as it would be easier
+                Activity a = c.course_classes.get(i);
+                if(a.section == null) { // Remove all references to this section
+                    if(a.room != null) { // this doesn't actually happen pero nanigurado lang XD
+                        for(DaySched sched : a.room.scheds) {
+                            sched.activities.remove(a);
+                        }
+                    }
+                    if(a.instructor != null) {
+                        for(DaySched sched : a.instructor.scheds) {
+                            sched.activities.remove(a);
+                        }
+                    }
+                    if(a.section != null) {
+                        for(DaySched sched : a.section.scheds) {
+                            sched.activities.remove(a);
+                        }
+                    }
+                    c.course_classes.remove(a);
+                }
+            }
+        }
+    }
+
     public void printTimetable() {
         for(Room r : rooms) {
             System.out.println("ROOM " + r.id + " {");
@@ -692,18 +787,4 @@ public class Timetable {
             System.out.println("}");
         }
     }
-
-//    private void checkTimetableHealth() {
-//        for(Course c : courses) {
-//            int roomless_classes = c.classes_offered - c.course_classes.get(c.course_classes.size() - 1).instance;
-//            if(roomless_classes == 0) {
-//                System.out.println("All " + c.name + " class(es) have rooms");
-//            } else {
-//                System.err.println(roomless_classes + " " + c.name + " class(es) have no rooms");
-//            }
-//        }
-//        for(Instructor i : instructors) { // TODO: To implement health checker
-//            System.out.println(i.name);
-//        }
-//    }
 }

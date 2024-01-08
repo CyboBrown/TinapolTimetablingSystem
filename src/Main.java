@@ -11,34 +11,34 @@ public class Main {
         // User set slots in Timetable (these attributes must be final before timetable generation and adding rooms/courses)
         // User Added Rooms and Courses
 
-        rooms.add(new Room("R01", 2)); // capacity is removed since it can be merged with room type
-        rooms.add(new Room("R02", 1)); // (optional) add feature to block certain periods in specific rooms
-        rooms.add(new Room("R03", 2));
-        rooms.add(new Room("R04", 0));
-        rooms.add(new Room("R05", 0));
-        rooms.add(new Room("R06", 3));
-        // Only minutes divisible by interval are accepted and weekly_meetings max is 6
-        // duration divided by weekly_meetings should also be divisible by interval //8
-        courses.add(new Course("Math", 240, 2, 20, new int[] { 0, 1, 2, 3 })); // Course id would be 0
-        courses.add(new Course("Science", 240, 2, 20, new int[] { 2 }));
-        courses.add(new Course("Computer", 240, 2, 10, new int[] { 3 }));
-        courses.add(new Course("English", 240, 2, 10, new int[] { 0, 1 })); // Course id would be 3
-        instructors.add(new Instructor("Mrs. A", 420, 720, new int[] {0, 1, 2, 3}));
-        instructors.add(new Instructor("Mrs. B", new int[] {0, 1, 2, 3})); // Array of compatible courses of instructors
-        instructors.add(new Instructor("Mrs. C", new int[] {0, 1, 2, 3}));
-        instructors.add(new Instructor("Mrs. D", new int[] {0, 1, 2, 3}));
-        instructors.add(new Instructor("Mrs. E", new int[] {0, 1, 2, 3}));
-        instructors.add(new Instructor("Mrs. F", new int[] {0, 1, 2, 3}));
-        sections.add(new Section("F1", new int[] {0, 1, 2, 3})); // Array of required courses for the block section
-        sections.add(new Section("F2", new int[] {0, 1, 2, 3}));
-        sections.add(new Section("F3", new int[] {0, 1, 2, 3}));
-        sections.add(new Section("F4", new int[] {0, 1, 2, 3}));
-        sections.add(new Section("F5", new int[] {0, 1, 2, 3}));
-        sections.add(new Section("F6", new int[] {0, 1, 2, 3}));
-        sections.add(new Section("F7", new int[] {0, 1, 2, 3}));
-        sections.add(new Section("F8", new int[] {0, 1, 2, 3}));
-        sections.add(new Section("F9", new int[] {0, 1, 2, 3}));
-        sections.add(new Section("F10", new int[] {0, 1, 2, 3}));
+//        rooms.add(new Room("R01", 2)); // capacity is removed since it can be merged with room type
+//        rooms.add(new Room("R02", 1)); // (optional) add feature to block certain periods in specific rooms
+//        rooms.add(new Room("R03", 2));
+//        rooms.add(new Room("R04", 0));
+//        rooms.add(new Room("R05", 0));
+//        rooms.add(new Room("R06", 3));
+//        // Only minutes divisible by interval are accepted and weekly_meetings max is 6
+//        // duration divided by weekly_meetings should also be divisible by interval //8
+//        courses.add(new Course("Math", 240, 2, 20, new int[] { 0, 1, 2, 3 })); // Course id would be 0
+//        courses.add(new Course("Science", 240, 2, 20, new int[] { 2 }));
+//        courses.add(new Course("Computer", 240, 2, 10, new int[] { 3 }));
+//        courses.add(new Course("English", 240, 2, 10, new int[] { 0, 1 })); // Course id would be 3
+//        instructors.add(new Instructor("Mrs. A", 420, 720, new int[] {0, 1, 2, 3}));
+//        instructors.add(new Instructor("Mrs. B", new int[] {0, 1, 2, 3})); // Array of compatible courses of instructors
+//        instructors.add(new Instructor("Mrs. C", new int[] {0, 1, 2, 3}));
+//        instructors.add(new Instructor("Mrs. D", new int[] {0, 1, 2, 3}));
+//        instructors.add(new Instructor("Mrs. E", new int[] {0, 1, 2, 3}));
+//        instructors.add(new Instructor("Mrs. F", new int[] {0, 1, 2, 3}));
+//        sections.add(new Section("F1", new int[] {0, 1, 2, 3})); // Array of required courses for the block section
+//        sections.add(new Section("F2", new int[] {0, 1, 2, 3}));
+//        sections.add(new Section("F3", new int[] {0, 1, 2, 3}));
+//        sections.add(new Section("F4", new int[] {0, 1, 2, 3}));
+//        sections.add(new Section("F5", new int[] {0, 1, 2, 3}));
+//        sections.add(new Section("F6", new int[] {0, 1, 2, 3}));
+//        sections.add(new Section("F7", new int[] {0, 1, 2, 3}));
+//        sections.add(new Section("F8", new int[] {0, 1, 2, 3}));
+//        sections.add(new Section("F9", new int[] {0, 1, 2, 3}));
+//        sections.add(new Section("F10", new int[] {0, 1, 2, 3}));
 
 //        rooms.add(new Room("R01", 2));
 //        rooms.add(new Room("R02", 1));
@@ -107,6 +107,38 @@ public class Main {
 //        courses.add(new Course("Science", 240, 2, 20, new int[] {0}));
 //        instructors.add(new Instructor("Mr. Teach", new int[] {0, 1}));
 
+//        // Lab and Lecture example
+//        rooms.add(new Room("Lab", 0));
+//        rooms.add(new Room("Lec", 1));
+//        Course lec = new Course(60, 2, new int[] {1}); // for Lecture
+//        courses.add(new Course("Chemistry", 120, 1, 8, new int[] {0}, lec)); // for Lab
+
+//        rooms.add(new Room("R1", 0));
+//        courses.add(new Course("Math", 240, 2, 2, new int[0]));
+//        instructors.add(new Instructor("Tulin", new int[] {0, 1}));
+
+        rooms.add(new Room("RTL302", 0));
+        rooms.add(new Room("RTL303", 1));
+        rooms.add(new Room("RTL300", 0));
+        rooms.add(new Room("Online", 2));
+        courses.add(new Course("CSIT212", 180, 2, 2, new int[] {0}));
+        courses.add(new Course("CSIT321", 240, 2, 2, new int[] {1}));
+        courses.add(new Course("CS313", 180, 2, 2, new int[] {0}));
+        courses.add(new Course("CS345", 300, 2, 2, new int[] {1}));
+        courses.add(new Course("CSIT327", 240, 2, 2, new int[] {0}));
+        courses.add(new Course("IT342", 300, 2, 2, new int[] {2}));
+        courses.add(new Course("ES038", 120, 1, 2, new int[] {2}));
+        instructors.add(new Instructor("Ms. A", new int[] {0}));
+        instructors.add(new Instructor("Ms. B", new int[] {1}));
+        instructors.add(new Instructor("Ms. C", new int[] {2}));
+        instructors.add(new Instructor("Ms. D", new int[] {3}));
+        instructors.add(new Instructor("Ms. E", new int[] {4}));
+        instructors.add(new Instructor("Ms. F", new int[] {5}));
+        instructors.add(new Instructor("Ms. G", new int[] {6}));
+        sections.add(new Section("F1", new int[] {0, 1, 2, 3, 4, 5, 6}));
+        sections.add(new Section("F2", new int[] {0, 1, 2, 3, 4, 5, 6}));
+
+        // Display codes
         Timetable timetable = new Timetable(rooms, courses, instructors, sections);
 //        timetable.printTimetable();
 //        for(Instructor i : instructors) {

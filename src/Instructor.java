@@ -8,7 +8,7 @@ public class Instructor {
     public int max_minutes;
     public List<Integer> compatible_courses;
     public List<DaySched> scheds; // You can customize teacher availability by modifying the period_start and period_end of each schedule (create your own constructor)
-    private int total_minutes = 0;
+    public int total_minutes = 0;
     public static int count = 0;
 
     public Instructor(String name, int[] compatible_courses) {
